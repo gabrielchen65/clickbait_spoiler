@@ -41,13 +41,13 @@ def main():
               --per_device_train_batch_size 12 \
               --max_seq_length 768 \
               --doc_stride 128 \
-              --output_dir ./pipline_output/qa/ "
+              --output_dir ./pipeline_output/qa/ "
   #subprocess.call(shlex.split(qa_script))
 
   #----- prepare QA result ------#
-  inputPre = "./pipline_output/qa/eval_predictions.json"
+  inputPre = "./pipeline_output/qa/eval_predictions.json"
   inputRef = "./datasets/val_cla-pred_phrase-passage.json"
-  outputF = "./pipline_output/qa/qa-pred-ref.json"
+  outputF = "./pipeline_output/qa/qa-pred-ref.json"
 
   with open(inputPre, 'r') as inPreF, open(inputRef, 'r') as inRefF, open(outputF, 'w') as outF:
       jPre = json.load(inPreF)
@@ -71,7 +71,7 @@ def main():
                 --text_column article \
                 --summary_column highlights \
                 --dataset_config '3.0.0' \
-                --output_dir ./pipline_output/sum/ \
+                --output_dir ./pipeline_output/sum/ \
                 --per_device_train_batch_size=4 \
                 --per_device_eval_batch_size=4 \
                 --overwrite_output_dir \
@@ -83,8 +83,8 @@ def main():
 
   #----- prepare summarization result ------#
   input = "./datasets/val_cla-pred_multi-concat.json"
-  answerFile = './pipline_output/sum/generated_predictions.txt'
-  output = './pipline_output/sum/sum-pred-ref.json'
+  answerFile = './pipeline_output/sum/generated_predictions.txt'
+  output = './pipeline_output/sum/sum-pred-ref.json'
   predictions = []
   references = []
 
@@ -109,9 +109,9 @@ def main():
   #----- evaluate all ------#
   predictions = []
   references = []
-  inputQA = "./pipline_output/qa/qa-pred-ref.json"
-  inputSum = "./pipline_output/sum/sum-pred-ref.json"
-  output = './pipline_output/all-pred-ref.csv'
+  inputQA = "./pipeline_output/qa/qa-pred-ref.json"
+  inputSum = "./pipeline_output/sum/sum-pred-ref.json"
+  output = './pipeline_output/all-pred-ref.csv'
 
   with open(inputQA, 'r') as in1F, open(inputSum, 'r') as in2F, open(output, 'w') as outF:
     qaJson = json.load(in1F)
