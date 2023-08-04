@@ -1,0 +1,15 @@
+python3 run_summarization.py \
+    --model_name_or_path tmp/Einmalumdiewelt-T5-Base_GNAD-30epoch \
+    --do_predict \
+    --test_file ./datasets/task2/val_4summary_multi-concat.json \
+    --text_column article \
+    --summary_column highlights \
+    --dataset_config "3.0.0" \
+    --output_dir ./tmp/test \
+    --per_device_train_batch_size=4 \
+    --per_device_eval_batch_size=4 \
+    --overwrite_output_dir \
+    --predict_with_generate \
+    --evaluation_metric rouge \
+    --max_target_length 70 \
+    --source_prefix "summarize: "
