@@ -13,14 +13,15 @@ y_pred = data.iloc[:, 1]
 y_true = data.iloc[:, 2]
 
 # Calculate precision, recall, and F1 score
-micro_precision, micro_recall, micro_f1, _ = precision_recall_fscore_support(y_true, y_pred, average='micro')
+micro_precision, micro_recall, micro_f1, _ = precision_recall_fscore_support(y_true, y_pred, average='macro')
 
 print("Micro Precision:", micro_precision)
 print("Micro Recall:", micro_recall)
 print("Micro F1 Score:", micro_f1)
 print("Balanced accuracy:",balanced_accuracy_score(y_true, y_pred))
 print()
-
+# print("y_pred:", y_pred)
+# print("y_true:", y_true)
 
 precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, labels=y_true.unique())
 

@@ -86,17 +86,18 @@ def main():
     y_val_enc = label_encoder.transform(val_label)
     # y_test_enc = label_encoder.transform(y_test)
     # print(np.count_nonzero(y_val_enc== 2))
+    
     one =0
     two =0
     zero = 0
-    for i in y_val_enc:
-        if i==0:
+    for i in val_label:
+        if i=="phrase":
             zero=zero+1
-        if i==1:
+        if i=="passage":
             one = one+1
-        if i==2:
+        if i=="multi":
             two = two+1
-    # print(zero,one,two)
+    print(zero,one,two)
 
     clf_uni = MultinomialNB()
     print("unigram")
@@ -104,21 +105,32 @@ def main():
     print(clf_uni.score(X_val_unigram, y_val_enc))
     y_pred = clf_uni.predict(X_val_unigram)
     # print(sklearn.metrics.f1_score(X_val_unigram, y_val_enc, average="macro"), labels=[0,1,2])
-    print(sklearn.metrics.precision_recall_fscore_support(y_val_enc,y_pred, average = 'weighted'))
+    print(sklearn.metrics.precision_recall_fscore_support(y_val_enc,y_pred,average = 'macro'))
+    print(sklearn.metrics.precision_recall_fscore_support(y_val_enc,y_pred))
+    print("balanced acc", sklearn.metrics.balanced_accuracy_score(y_val_enc,y_pred))
+    print()
+    # print("y_pred:", y_pred)
+    # print("y_true:", y_val_enc)
     
     print("bigram")
     clf_bi = MultinomialNB()
     clf_bi.fit(X_train_bigram, y_train_enc)
     print(clf_bi.score(X_val_bigram, y_val_enc))
     y_pred = clf_bi.predict(X_val_bigram)
+    print(sklearn.metrics.precision_recall_fscore_support(y_val_enc,y_pred, average = 'macro'))
     print(sklearn.metrics.precision_recall_fscore_support(y_val_enc,y_pred))
+    print("balanced acc", sklearn.metrics.balanced_accuracy_score(y_val_enc,y_pred))
+    print()
 
     clf_mixed = MultinomialNB()
     clf_mixed.fit(X_train_mixed, y_train_enc)
     print("Mixed")
     print(clf_mixed.score(X_val_mixed, y_val_enc))
     y_pred = clf_mixed.predict(X_val_mixed)
+    print(sklearn.metrics.precision_recall_fscore_support(y_val_enc,y_pred , average = 'macro'))
     print(sklearn.metrics.precision_recall_fscore_support(y_val_enc,y_pred))
+    print("balanced acc", sklearn.metrics.balanced_accuracy_score(y_val_enc,y_pred))
+    print()
     
     # with open(save_path+'mnb_bi.pkl', 'wb') as f: 
     #     pickle.dump(clf_bi, f)
