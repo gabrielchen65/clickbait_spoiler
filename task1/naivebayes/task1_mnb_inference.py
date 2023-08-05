@@ -45,8 +45,8 @@ def run_inference(input_file, output_file):
             
 
 def main():
-    test_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/clickbait-detection-msci641-s23/test.jsonl'
-    output_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/naivebayes/mnb_bi_out.csv'
+    test_file = '../task1/clickbait-detection-msci641-s23/test.jsonl'
+    output_file = 'mnb_bi_out.csv'
     run_inference(test_file, output_file)
     pass
 

@@ -13,9 +13,6 @@ import pickle
 import sklearn.metrics
 
 
-
-data_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/clickbait-detection-msci641-s23/train.jsonl'
-
 def return_data(file):
     postText_arr = []
     tags_arr=[]
@@ -48,8 +45,8 @@ def tokenize(line):
     return tokenizedLine
 
 def main():
-    train_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/clickbait-detection-msci641-s23/train.jsonl'
-    val_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/clickbait-detection-msci641-s23/val.jsonl'
+    train_file = '../task1/clickbait-detection-msci641-s23/train.jsonl'
+    val_file = '../task1/clickbait-detection-msci641-s23/val.jsonl'
     train_text, train_label = return_data(train_file)
     val_text, val_label = return_data(val_file)
     print(len(val_text))
@@ -70,7 +67,7 @@ def main():
         # X_train.append(tokens)
     # print(len(X_val))
 
-    save_path = '/Users/krishthek/Documents/uWaterloo/msci641/project/naivebayes/'
+    save_path = ''
 
     unigram_vectorizer = CountVectorizer(ngram_range=(1,1))
     bigram_vectorizer = CountVectorizer(ngram_range=(2,2))
