@@ -49,81 +49,70 @@ def yield_tokens(data_iter):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-class TextClassificationModel(nn.Module):
-    def __init__(self, vocab_size, embed_dim,hidden_size, num_class):
-        super(TextClassificationModel, self).__init__()
-        self.embedding = nn.EmbeddingBag(vocab_size, embed_dim, sparse=False)
-        self.init_weights()
-        #lstm 
-        self.lstm = nn.LSTM(input_size=embed_dim,hidden_size=self.hidden_dim,num_layers=10, batch_first=True)
-        # dropout layer
-        self.dropout = nn.Dropout(0.3)
-        # linear and sigmoid layer
-        self.fc = nn.Linear(self.hidden_dim, num_class)
-        self.sig = nn.Sigmoid()
 
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+from torch.nn import functional as F
 
-    def forward(self, text, offsets):
-        embedded = self.embedding(text, offsets)
-        
-        return self.fc(embedded)
-
-
-class SentimentRNN(nn.Module):
-    def __init__(self,output_dim, no_layers,vocab_size,hidden_dim,embedding_dim,drop_prob=0.5):
-        super(SentimentRNN,self).__init__()
-
-        self.output_dim = output_dim
-        self.hidden_dim = hidden_dim
-
-        self.no_layers = no_layers
-        self.vocab_size = vocab_size
-
-        # embedding and LSTM layers
-        self.embedding = nn.Embedding(vocab_size, embedding_dim)
-        #lstm 
-        self.lstm = nn.LSTM(input_size=embedding_dim,hidden_size=self.hidden_dim,num_layers=no_layers, batch_first=True)
-
-        # dropout layer
-        self.dropout = nn.Dropout(0.3)
-
-        # linear and sigmoid layer
-        self.fc = nn.Linear(self.hidden_dim, output_dim)
-        self.sig = nn.Sigmoid()
-
-    def forward(self,x,hidden):
-        batch_size = x.size(0)
-        # embeddings and lstm_out
-        embeds = self.embedding(x)  # shape: B x S x Feature   since batch = True
-        #print(embeds.shape)  #[50, 500, 1000]
-        lstm_out, hidden = self.lstm(embeds, hidden)
-
-        lstm_out = lstm_out.contiguous().view(-1, self.hidden_dim) 
-
-        # dropout and fully connected layer
-        out = self.dropout(lstm_out)
-        out = self.fc(out)
-        # sigmoid function
-        sig_out = self.sig(out)
-
-        # reshape to be batch_size first
-        sig_out = sig_out.view(batch_size, -1)
-
-        sig_out = sig_out[:, -1] # get last batch of labels
-
-        # return last sigmoid output and hidden state
-        return sig_out, hidden
+class LSTMClassifier(nn.Module):
+	def __init__(self, batch_size, output_size, hidden_size, vocab_size, embedding_length, weights):
+		super(LSTMClassifier, self).__init__()
+		
+		"""
+		Arguments
+		---------
+		batch_size : Size of the batch which is same as the batch_size of the data returned by the TorchText BucketIterator
+		output_size : 2 = (pos, neg)
+		hidden_sie : Size of the hidden_state of the LSTM
+		vocab_size : Size of the vocabulary containing unique words
+		embedding_length : Embeddding dimension of GloVe word embeddings
+		weights : Pre-trained GloVe word_embeddings which we will use to create our word_embedding look-up table 
+		
+		"""
+		
+		self.batch_size = batch_size
+		self.output_size = output_size
+		self.hidden_size = hidden_size
+		self.vocab_size = vocab_size
+		self.embedding_length = embedding_length
+		
+		self.word_embeddings = nn.Embedding(vocab_size, embedding_length)# Initializing the look-up table.
+		self.word_embeddings.weight = nn.Parameter(weights, requires_grad=False) # Assigning the look-up table to the pre-trained GloVe word embedding.
+		self.lstm = nn.LSTM(embedding_length, hidden_size)
+		self.label = nn.Linear(hidden_size, output_size)
+		
+	def forward(self, input_sentence, batch_size=None):
+	
+		""" 
+		Parameters
+		----------
+		input_sentence: input_sentence of shape = (batch_size, num_sequences)
+		batch_size : default = None. Used only for prediction on a single sentence after training (batch_size = 1)
+		
+		Returns
+		-------
+		Output of the linear layer containing logits for positive & negative class which receives its input as the final_hidden_state of the LSTM
+		final_output.shape = (batch_size, output_size)
+		
+		"""
+		
+		''' Here we will map all the indexes present in the input sequence to the corresponding word vector using our pre-trained word_embedddins.'''
+		input = self.word_embeddings(input_sentence) # embedded input of shape = (batch_size, num_sequences,  embedding_length)
+		input = input.permute(1, 0, 2) # input.size() = (num_sequences, batch_size, embedding_length)
+		if batch_size is None:
+			h_0 = Variable(torch.zeros(1, self.batch_size, self.hidden_size).cuda()) # Initial hidden state of the LSTM
+			c_0 = Variable(torch.zeros(1, self.batch_size, self.hidden_size).cuda()) # Initial cell state of the LSTM
+		else:
+			h_0 = Variable(torch.zeros(1, batch_size, self.hidden_size).cuda())
+			c_0 = Variable(torch.zeros(1, batch_size, self.hidden_size).cuda())
+		output, (final_hidden_state, final_cell_state) = self.lstm(input, (h_0, c_0))
+		final_output = self.label(final_hidden_state[-1]) # final_hidden_state.size() = (1, batch_size, hidden_size) & final_output.size() = (batch_size, output_size)
+		
+		return final_output
 
 
 
-    def init_hidden(self, batch_size):
-        ''' Initializes hidden state '''
-        # Create two new tensors with sizes n_layers x batch_size x hidden_dim,
-        # initialized to zero, for hidden state and cell state of LSTM
-        h0 = torch.zeros((self.no_layers,batch_size,self.hidden_dim)).to(device)
-        c0 = torch.zeros((self.no_layers,batch_size,self.hidden_dim)).to(device)
-        hidden = (h0,c0)
-        return hidden
 
 def main():
     train_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/clickbait-detection-msci641-s23/train.jsonl'

@@ -97,7 +97,7 @@ class NeuralNetwork(nn.Module):
         return x
     
 def main():
-    train_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/clickbait-detection-msci641-s23/train.jsonl'
+    train_file = 'clickbait-detection-msci641-s23/train.jsonl'
     val_test_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/clickbait-detection-msci641-s23/val.jsonl'
     test_file = '/Users/krishthek/Documents/uWaterloo/msci641/project/clickbait-detection-msci641-s23/test.jsonl'
     # train_iter = iter(CustomDataset(train_file))
