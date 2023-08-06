@@ -90,7 +90,7 @@ def main():
     one =0
     two =0
     zero = 0
-    for i in val_label:
+    for i in train_label:
         if i=="phrase":
             zero=zero+1
         if i=="passage":
