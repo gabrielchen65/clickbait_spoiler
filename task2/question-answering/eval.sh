@@ -8,8 +8,7 @@ python3 run_qa.py \
   --max_seq_length 386 \
   --doc_stride 128 \
   --output_dir ./tmp/pilot_test/ \
-  --use_peft True \
-  --original_model_name_for_peft_eval deepset/roberta-base-squad2
+  --peft_eval True
 
 # python3 run_qa.py \
 #   --model_name_or_path ./tmp/deepset-roberta-base-squad2-768/checkpoint-12000/ \

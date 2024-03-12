@@ -90,12 +90,12 @@ class ModelArguments:
             )
         },
     )
-    use_peft: bool = field(
+    training_w_peft: bool = field(
         default=False,
         metadata={"help": ("Use LoRA to speed up training")},
     )
-    original_model_name_for_peft_eval: str = field(
-        default=None,
+    peft_eval: bool = field(
+        default=False,
         metadata={"help": ("for loading the model after fine-tuning with LoRA")},
     )
 
@@ -334,10 +334,11 @@ def main():
     # download model & vocab.
         
     # for evaluating the model after fine-tuning with LoRA
-    if model_args.original_model_name_for_peft_eval is not None and model_args.use_peft == True:
+    if model_args.peft_eval:
         from peft import PeftModel, PeftConfig
         peft_path = model_args.model_name_or_path
-        model_args.model_name_or_path = model_args.original_model_name_for_peft_eval
+        peft_config = PeftConfig.from_pretrained(model_args.model_name_or_path)
+        model_args.model_name_or_path = peft_config.base_model_name_or_path
 
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
@@ -362,9 +363,9 @@ def main():
     )
 
     # using LoRA to speed up training
-    if model_args.use_peft == True:
+    if model_args.training_w_peft or model_args.peft_eval:
         from peft import get_peft_model, LoraConfig, TaskType, PeftModel
-        if model_args.original_model_name_for_peft_eval is None:
+        if not model_args.peft_eval:
             peft_config = LoraConfig(
                 task_type=TaskType.QUESTION_ANS, r=2, lora_alpha=16, lora_dropout=0.1, bias="none",
             )

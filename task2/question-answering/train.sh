@@ -13,7 +13,7 @@ python3 run_qa.py \
   --doc_stride 128 \
   --output_dir ./tmp/pilot_test \
   --save_strategy epoch \
-  --use_peft True \
+  --training_w_peft True \
   --evaluation_strategy epoch
   #--version_2_with_negative
 
