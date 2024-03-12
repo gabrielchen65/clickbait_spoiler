@@ -90,6 +90,10 @@ class ModelArguments:
             )
         },
     )
+    use_perf: bool = field(
+        default=False,
+        metadata={"help": ("Use LoRA to speed up training")},
+    )
 
 
 @dataclass
@@ -345,6 +349,18 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
+
+    # using LoRA to speed up training
+    if model_args.use_perf == True:
+        from peft import get_peft_model, LoraConfig, TaskType
+        roberta_peft_config = LoraConfig(
+            task_type=TaskType.QUESTION_ANS, r=2, lora_alpha=16, lora_dropout=0.1, bias="none",
+        )
+        model = get_peft_model(model, roberta_peft_config)
+
+        print("="*30 + " Using PERF (LoRA) to speed up training " + "="*30)
+        model.print_trainable_parameters()
+        print("="*90)
 
     # Tokenizer check: this script requires a fast tokenizer.
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
