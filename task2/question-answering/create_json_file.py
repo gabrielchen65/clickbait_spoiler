@@ -13,7 +13,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_baseline(input_file, output_file, concat_multi=True):
+def run_baseline(input_file, output_file, concat_multi=True, include_multi=True):
     with open(input_file, 'r') as inp, open(output_file, 'w') as out:
         inp = list(inp)
         squad_like_dataset = {"data": []}
@@ -21,8 +21,8 @@ def run_baseline(input_file, output_file, concat_multi=True):
         for line in inp:             
             output = json.loads(line)
 
-            #if output["tags"] != ["multi"]:
-            #    continue
+            if output["tags"] == ["multi"] and not include_multi:
+                continue
             question = str(output['targetTitle'])
             # concat context
             context = ''
@@ -63,13 +63,33 @@ def run_baseline(input_file, output_file, concat_multi=True):
             #if count > 9: break
         #squad_like_dataset = squad_like_dataset["data"]
         # Save the SQuAD-like dataset as a JSON file
-        json.dump(squad_like_dataset, out)
+        json.dump(squad_like_dataset, out, indent=2)
             
            
 if __name__ == '__main__':
     #args = parse_args()
+    dataset = 'train'
+    include_multi=True    
+    concat_multi=True
+    postfix1 = ''
+    postfix2 = ''
+    if include_multi:
+      postfix1 = 'include-multi'
+    else:
+      postfix1 = 'not-include-multi'   
+    
+    if len(postfix1) != 0:
+      if concat_multi:
+        postfix2 = '_concat-multi'
+      else:
+        postfix2 = '_not-concat-multi'
+
+    input_file = f'../../original_datasets/{dataset}.jsonl'
+    output_file = f'./datasets/{dataset}_'+postfix1+postfix2+'.json'
+    run_baseline(input_file, output_file, concat_multi=concat_multi, include_multi=include_multi)
+
     #run_baseline(args.input, args.output)
-    #run_baseline('./train.jsonl', './train.json')
-    run_baseline('./datasets/val.jsonl', './datasets/val-concat.json', True)
+    #run_baseline('./train.jsonl', './train_nonmulti.json', include_multi=False)
+    #run_baseline('../../original_datasets/validation.jsonl', './val-nonmulti-concat.json', concat_multi=concat_multi, include_multi=include_multi)
     #run_baseline('./test.jsonl', './test.json')
 
