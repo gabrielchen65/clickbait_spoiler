@@ -8,12 +8,13 @@ python3 run_qa.py \
   --do_predict \
   --per_device_train_batch_size 12 \
   --learning_rate 3e-5 \
-  --num_train_epochs 30 \
-  --max_seq_length 384 \
+  --num_train_epochs 2 \
+  --max_seq_length 386 \
   --doc_stride 128 \
   --output_dir ./tmp/pilot_test \
-  --save_steps 1500 \
-  --evaluate_during_training
+  --save_strategy epoch \
+  --use_peft True \
+  --evaluation_strategy epoch
   #--version_2_with_negative
 
 

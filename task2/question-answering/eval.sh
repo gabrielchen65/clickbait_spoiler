@@ -1,12 +1,25 @@
+# original_model_name_for_peft_eval: for loading the model after fine-tuning with LoRA
 python3 run_qa.py \
-  --model_name_or_path ./tmp/deepset-roberta-base-squad2-768/checkpoint-12000/ \
-  --validation_file ./datasets/val_sum_t5-base_tuned_multi.json \
+  --model_name_or_path tmp/pilot_test/checkpoint-1/ \
+  --validation_file ./datasets/pilot_test.json \
   --do_eval \
   --evaluation_metric meteor \
   --per_device_train_batch_size 12 \
-  --max_seq_length 768 \
+  --max_seq_length 386 \
   --doc_stride 128 \
-  --output_dir ./tmp/test/ \
+  --output_dir ./tmp/pilot_test/ \
+  --use_peft True \
+  --original_model_name_for_peft_eval deepset/roberta-base-squad2
+
+# python3 run_qa.py \
+#   --model_name_or_path ./tmp/deepset-roberta-base-squad2-768/checkpoint-12000/ \
+#   --validation_file ./datasets/val_sum_t5-base_tuned_multi.json \
+#   --do_eval \
+#   --evaluation_metric meteor \
+#   --per_device_train_batch_size 12 \
+#   --max_seq_length 768 \
+#   --doc_stride 128 \
+#   --output_dir ./tmp/test/ \
   #--version_2_with_negative
 
 #./tmp/eval_sum/val_sum_t5-base_tuned-no-train-qa/output_30epoches_distilbert-base-uncased-distilled-squad/checkpoint-22500/ \

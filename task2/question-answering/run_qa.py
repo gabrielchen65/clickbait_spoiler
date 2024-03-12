@@ -90,9 +90,13 @@ class ModelArguments:
             )
         },
     )
-    use_perf: bool = field(
+    use_peft: bool = field(
         default=False,
         metadata={"help": ("Use LoRA to speed up training")},
+    )
+    original_model_name_for_peft_eval: str = field(
+        default=None,
+        metadata={"help": ("for loading the model after fine-tuning with LoRA")},
     )
 
 
@@ -328,6 +332,13 @@ def main():
     # Distributed training:
     # The .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
+        
+    # for evaluating the model after fine-tuning with LoRA
+    if model_args.original_model_name_for_peft_eval is not None and model_args.use_peft == True:
+        from peft import PeftModel, PeftConfig
+        peft_path = model_args.model_name_or_path
+        model_args.model_name_or_path = model_args.original_model_name_for_peft_eval
+
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
@@ -351,14 +362,17 @@ def main():
     )
 
     # using LoRA to speed up training
-    if model_args.use_perf == True:
-        from peft import get_peft_model, LoraConfig, TaskType
-        roberta_peft_config = LoraConfig(
-            task_type=TaskType.QUESTION_ANS, r=2, lora_alpha=16, lora_dropout=0.1, bias="none",
-        )
-        model = get_peft_model(model, roberta_peft_config)
+    if model_args.use_peft == True:
+        from peft import get_peft_model, LoraConfig, TaskType, PeftModel
+        if model_args.original_model_name_for_peft_eval is None:
+            peft_config = LoraConfig(
+                task_type=TaskType.QUESTION_ANS, r=2, lora_alpha=16, lora_dropout=0.1, bias="none",
+            )
+            model = get_peft_model(model, peft_config)
+        else:
+            model = PeftModel.from_pretrained(model, peft_path)
 
-        print("="*30 + " Using PERF (LoRA) to speed up training " + "="*30)
+        print("="*30 + " Using peft (LoRA) " + "="*30)
         model.print_trainable_parameters()
         print("="*90)
 
