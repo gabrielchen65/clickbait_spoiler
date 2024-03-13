@@ -50,7 +50,7 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version, is_offline_mode, send_example_telemetry
 from transformers.utils.versions import require_version
-
+from peft import get_peft_model, LoraConfig, TaskType, PeftModel, PeftConfig
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.32.0.dev0")
@@ -117,6 +117,14 @@ class ModelArguments:
                 "the model's position embeddings."
             )
         },
+    )
+    training_w_peft: bool = field(
+        default=False,
+        metadata={"help": ("Use LoRA to speed up training")},
+    )
+    peft_eval: bool = field(
+        default=False,
+        metadata={"help": ("for loading the model after fine-tuning with LoRA")},
     )
 
 
@@ -419,6 +427,13 @@ def main():
     # Distributed training:
     # The .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
+        
+    # for evaluating the model after fine-tuning with LoRA
+    if model_args.peft_eval:
+        peft_path = model_args.model_name_or_path
+        peft_config = PeftConfig.from_pretrained(model_args.model_name_or_path)
+        model_args.model_name_or_path = peft_config.base_model_name_or_path        
+
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
@@ -440,6 +455,20 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
+
+        # using LoRA to speed up training
+    if model_args.training_w_peft or model_args.peft_eval:
+        if not model_args.peft_eval:
+            peft_config = LoraConfig(
+                task_type=TaskType.SEQ_2_SEQ_LM, r=2, lora_alpha=16, lora_dropout=0.1, bias="none",
+            )
+            model = get_peft_model(model, peft_config)
+        else:
+            model = PeftModel.from_pretrained(model, peft_path)
+
+        print("="*30 + " Using peft (LoRA) " + "="*30)
+        model.print_trainable_parameters()
+        print("="*90)
 
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.

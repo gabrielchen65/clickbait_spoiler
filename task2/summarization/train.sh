@@ -11,11 +11,12 @@ python3 run_summarization.py \
     --per_device_eval_batch_size=4 \
     --predict_with_generate \
     --num_train_epochs 2 \
-    --output_dir ./tmp/Einmalumdiewelt-T5-Base_GNAD/concat/ \
+    --output_dir ./tmp/pilot_test \
     --max_target_length 40 \
-    --save_strategy epoch \
-    --load_best_model_at_end True \
     --source_prefix "summarize: " \
-    --evaluation_strategy epoch
+    --save_strategy no \
+    --save_total_limit 1 \
+    --load_best_model_at_end True \
+    --training_w_peft True \
 
     #    --source_prefix "summarize: " \ only t5 model
