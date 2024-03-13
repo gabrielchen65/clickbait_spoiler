@@ -126,6 +126,14 @@ class ModelArguments:
         default=False,
         metadata={"help": ("for loading the model after fine-tuning with LoRA")},
     )
+    lora_rank: Optional[int] = field(
+        default=2,
+        metadata={"help": "The rank of LoRA"}
+    )
+    lora_alpha: Optional[int] = field(
+        default=16,
+        metadata={"help": "The rank of LoRA"}
+    )    
 
 
 @dataclass
@@ -460,7 +468,11 @@ def main():
     if model_args.training_w_peft or model_args.peft_eval:
         if not model_args.peft_eval:
             peft_config = LoraConfig(
-                task_type=TaskType.SEQ_2_SEQ_LM, r=2, lora_alpha=16, lora_dropout=0.1, bias="none",
+                task_type=TaskType.SEQ_2_SEQ_LM, 
+                r=model_args.lora_rank, 
+                lora_alpha=model_args.lora_alpha, 
+                lora_dropout=0.1, 
+                bias="none",
             )
             model = get_peft_model(model, peft_config)
         else:
